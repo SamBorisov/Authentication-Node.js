@@ -47,7 +47,7 @@ app.route("/login")
     username = req.body.username;
     password = req.body.password;
 
-    User.findOne({username}, (err, result) => {
+    User.findOne({email: username}, (err, result) => {
         console.log("userFound")
         if(result) {
             if ( result.password === password) {
