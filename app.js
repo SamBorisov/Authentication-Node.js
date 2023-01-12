@@ -3,8 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-const encrypt = require("mongoose-encryption");
 const { config } = require('dotenv');
+const md5 = require("md5")
 
 //setup
 const app = express();
@@ -21,15 +21,10 @@ const userSchema = new mongoose.Schema ({
     password: String
   })
 
-  const encKey = process.env.SOME_32BYTE_BASE64_STRING;
-  const sigKey = process.env.SOME_64BYTE_BASE64_STRING;
 
-
-userSchema.plugin(encrypt, {secret: process.env.SECRET , encryptedFields: ['password'] });
 
 const User = mongoose.model("User", userSchema);
 
-console.log(process.env.SECRET)
 
 //routs
 app.route("/")
@@ -45,9 +40,10 @@ app.route("/login")
   .post((req,res)=> {
 
     username = req.body.username;
-    password = req.body.password;
+    password = md5(req.body.password);
 
-    User.findOne({username}, (err, result) => {
+    // on prevous commit forgot email:username
+    User.findOne({email: username}, (err, result) => {
         console.log("userFound")
         if(result) {
             if ( result.password === password) {
@@ -66,7 +62,7 @@ app.route("/register")
     .post((req,res) => {
         const newUser = new User({
             email: req.body.username,
-            password: req.body.password
+            password: md5(req.body.password)
         });
         newUser.save((err) => {
             if(!err) {
